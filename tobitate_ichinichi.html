@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>園の一日 | とびたて！保育園</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&family=Shippori+Mincho:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --moss: #5C7A5A;
+    --moss-light: #8FAD8C;
+    --moss-pale: #E8F0E4;
+    --ink: #2E2A24;
+    --ink-light: #7A6F62;
+    --border: #D9D0C0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+    font-size: 15px;
+    line-height: 1.9;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* 背景テクスチャ */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(92,122,90,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(92,122,90,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 80px;
+  }
+
+  /* ヘッダー */
+  .header {
+    padding: 52px 28px 36px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-eyebrow {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--moss);
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.1s;
+  }
+
+  .header h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    margin-bottom: 10px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.25s;
+  }
+
+  .header-sub {
+    font-size: 12px;
+    color: var(--ink-light);
+    letter-spacing: 0.06em;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.4s;
+  }
+
+  /* タブ切り替え */
+  .tab-nav {
+    display: flex;
+    margin: 0 24px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.55s;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 16px 8px;
+    background: none;
+    border: none;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--ink-light);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.25s, border-color 0.25s;
+  }
+
+  .tab-btn.active {
+    color: var(--moss);
+    border-bottom-color: var(--moss);
+  }
+
+  /* タブコンテンツ */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* タイムラインセクション */
+  .timeline {
+    padding: 32px 28px 0;
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 32px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  /* 縦線 */
+  .timeline-item:not(:last-child) .time-col::after {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 28px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .time-col {
+    flex-shrink: 0;
+    width: 64px;
+    position: relative;
+  }
+
+  .time-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--moss-light);
+    margin: 7px auto 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .time-dot.accent {
+    background: var(--moss);
+    width: 10px;
+    height: 10px;
+    margin-top: 6px;
+  }
+
+  .time-label {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--moss);
+    text-align: center;
+    margin-top: 6px;
+    display: block;
+  }
+
+  .content-col {
+    flex: 1;
+    padding-top: 2px;
+  }
+
+  .event-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .event-desc {
+    font-size: 12.5px;
+    color: var(--ink-light);
+    line-height: 1.85;
+    letter-spacing: 0.02em;
+  }
+
+  /* 食事タグ */
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--moss);
+    background: var(--moss-pale);
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-top: 6px;
+  }
+
+  /* セクション区切り */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--moss-light);
+    text-align: center;
+    padding: 8px 28px 0;
+    text-transform: uppercase;
+  }
+
+  /* フッター */
+  .footer {
+    margin: 48px 28px 0;
+    padding: 28px 0 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .footer-name {
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .footer-note {
+    font-size: 11px;
+    color: var(--ink-light);
+    line-height: 1.8;
+  }
+
+  .footer-link {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 28px;
+    border: 1px solid var(--moss);
+    color: var(--moss);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .footer-link:hover {
+    background: var(--moss);
+    color: var(--cream);
+  }
+
+  /* アニメーション */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .timeline-item:nth-child(1) { animation-delay: 0.05s; }
+  .timeline-item:nth-child(2) { animation-delay: 0.12s; }
+  .timeline-item:nth-child(3) { animation-delay: 0.19s; }
+  .timeline-item:nth-child(4) { animation-delay: 0.26s; }
+  .timeline-item:nth-child(5) { animation-delay: 0.33s; }
+  .timeline-item:nth-child(6) { animation-delay: 0.40s; }
+  .timeline-item:nth-child(7) { animation-delay: 0.47s; }
+  .timeline-item:nth-child(8) { animation-delay: 0.54s; }
+  .timeline-item:nth-child(9) { animation-delay: 0.61s; }
+
+  /* 小さな装飾 */
+  .sprig {
+    display: block;
+    text-align: center;
+    color: var(--moss-light);
+    font-size: 18px;
+    margin: 4px 0 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.65s;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header class="header">
+    <div class="header-eyebrow">TOBITATE HOIKUEN</div>
+    <h1>園の一日</h1>
+    <div class="header-sub">春日市 ／ 0〜2歳少人数保育</div>
+  </header>
+
+  <span class="sprig">✦</span>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('baby', this)">0〜1歳</button>
+    <button class="tab-btn" onclick="switchTab('toddler', this)">1〜2歳</button>
+  </nav>
+
+  <!-- 0〜1歳 -->
+  <div id="baby" class="tab-content active">
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">8:00</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">延長保育</div>
+          <div class="event-desc">ゆっくりと、朝の始まり。<br>安心できる場所で、目が覚めていく。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot accent"></div>
+          <span class="time-label">8:30</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">登園</div>
+          <div class="event-desc">「おはよう」のあいさつから。<br>自分のペースで、この場所に慣れていく。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">10:00</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">午前のおやつ</div>
+          <div class="event-desc">オーガニック素材の小さな一口。<br>からだが目覚める、静かな時間。</div>
+          <span class="tag">オーガニック</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">〜</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">外気浴・感覚あそび</div>
+          <div class="event-desc">光、風、土、葉っぱ。<br>世界を、からだ全部で感じる時間。<br>0歳から、本物に触れる。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot accent"></div>
+          <span class="time-label">11:30</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">昼ごはん</div>
+          <div class="event-desc">発酵食材と旬の野菜を、丁寧に調理して。<br>食べることは、生きること。</div>
+          <span class="tag">発酵給食</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">〜</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">静かなあそび・絵本</div>
+          <div class="event-desc">眠くなるまで、ゆったりと。<br>保育者と一緒に、安心の中で。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">〜</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">午睡</div>
+          <div class="event-desc">たっぷり眠る。<br>育ちは、眠りの中にある。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot accent"></div>
+          <span class="time-label">14:30</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">目覚めのあそび</div>
+          <div class="event-desc">起きたら、また新しい探索へ。<br>今日も、小さな発見がある。</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 1〜2歳 -->
+  <div id="toddler" class="tab-content">
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">8:00</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">延長保育</div>
+          <div class="event-desc">静かな朝の時間。<br>好きなあそびを、ゆっくりと。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot accent"></div>
+          <span class="time-label">8:30</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">登園</div>
+          <div class="event-desc">自分で靴を脱いで、荷物を置いて。<br>「自分でできた」が積み重なっていく。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">10:00</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">午前のおやつ</div>
+          <div class="event-desc">みんなで食卓を囲む、小さな練習。<br>「いただきます」の意味を、からだで覚える。</div>
+          <span class="tag">オーガニック</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">〜</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">外あそび・レッジョエミリア活動</div>
+          <div class="event-desc">「なんで？」「やってみたい」<br>その気持ちを、そのまま大切にする。<br>自然素材・本物に触れる探索の時間。</div>
+          <span class="tag">レッジョエミリア</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot accent"></div>
+          <span class="time-label">11:30</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">昼ごはん</div>
+          <div class="event-desc">旬の食材と、発酵の力。<br>よく噛んで、ゆっくりと味わう。<br>食卓が、学びの場になる。</div>
+          <span class="tag">発酵給食</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">〜</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">静かなあそび</div>
+          <div class="event-desc">絵本、パズル、手先を使うあそび。<br>自分の中に帰っていくような、静かな時間。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot"></div>
+          <span class="time-label">〜</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">午睡</div>
+          <div class="event-desc">眠たい子はしっかり眠る。<br>眠れない子は、静かに過ごす。<br>それぞれのリズムを尊重する。</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="time-col">
+          <div class="time-dot accent"></div>
+          <span class="time-label">14:30</span>
+        </div>
+        <div class="content-col">
+          <div class="event-title">午後の活動・外あそび</div>
+          <div class="event-desc">午後もまた、探索と発見の時間。<br>今日一日の、小さな積み重ねへ。</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-name">とびたて！保育園</div>
+    <div class="footer-note">福岡県春日市 ／ 認可外保育園<br>0〜2歳 定員14名 少人数制</div>
+    <a href="#" class="footer-link">見学・お問い合わせ</a>
+  </footer>
+
+</div>
+
+<script>
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+
+    // タブ切り替え時にアニメーション再生
+    const items = document.querySelectorAll('#' + id + ' .timeline-item');
+    items.forEach((item, i) => {
+      item.style.animation = 'none';
+      item.offsetHeight; // reflow
+      item.style.animation = '';
+      item.style.animationDelay = (i * 0.07) + 's';
+    });
+  }
+</script>
+</body>
+</html>
